@@ -581,13 +581,19 @@ public class VolumeHandler
 			}
 		}
 
-		int rowaffected = S5Database.getInstance()
+		int rowaffectedreplica = S5Database.getInstance()
 				.sql("delete from t_replica where t_replica.volume_id in (select t_volume.id from t_volume where name='"
 						+ volume_name + "' and tenant_id=" + t_idx + ")")
 				.execute().getRowsAffected();
+
+		int rowaffectedsnapshot = S5Database.getInstance()
+				.sql("delete from t_snapshot where t_snapshot.volume_id in (select t_volume.id from t_volume where name='"
+						+ volume_name + "' and tenant_id=" + t_idx + ")")
+				.execute().getRowsAffected();
+
 		int r = S5Database.getInstance().table("t_volume").where("name=? AND tenant_id=?", volume_name, t_idx).delete()
 				.getRowsAffected();
-		logger.info("Volume {} deleted, {} replicas deleted on store node", volume_name, rowaffected);
+		logger.info("Volume {} deleted, {} replicas deleted on store node, {} snapshot deleted on store node", volume_name, rowaffectedreplica, rowaffectedsnapshot);
 		return r;
 	}
 	public RestfulReply delete_volume(Request request, Response response)
